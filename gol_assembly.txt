@@ -1,0 +1,220 @@
+
+
+start:
+  WTM
+  addressX
+  7
+
+  WTM
+  inPixEnd + 1
+  addressY
+
+
+  
+  
+  X, Y, MASK0, MASK1, CURRENTCOUNT, ISALIVE, OY
+  INPIXELS
+  PIXELS_END (pixels+7)
+  OUTPIXELS
+  OUTPIXELS_END
+  MASKSINGLE
+  MASKTRIPLE
+
+  // Load into mem
+start:
+  WTA 
+    7
+  STA
+    X
+  WTA 
+    INPIXELS_END + 1
+  STA
+    Y
+  WTA 
+    OUTPIXELS_END + 1
+  STA
+    OY
+  WTA
+    10000000
+  STA
+    MASKSINGLE
+  WTA
+    01000001
+  STA
+    MASKTRIPLE
+  WTA
+    7
+  STA
+    MASKTRIPLE
+swap:               // swap pixels backwards until Y and OY are at start addresses
+  LDB
+    OY
+  DEC B             // Decrement output address in B  
+  LDA B             // Load A with output pixels
+  STB   
+    OY              // Store new decremented address
+  LDB 
+    Y               // Load input address into B
+  DEC B             // Decrement input address
+  STA B             // Store output pixels into input address
+  STB 
+    Y               // Store new decremented address
+  LDA   
+    PIXELS          // Load A with input start address
+  JMP0              // If we've done all the swapping, jump ahead
+    sendRow 
+  JMP 
+    swap            // loop swap
+sendRow:
+  LDA
+    OY
+  LDD A
+checkAlive:
+  LDA
+    Y
+  LDB 
+    MASKSINGLE
+  AND AB // Diff with single bit mask
+  CNT A // Count diff (will be either 1 or 0)
+  JMP A0
+    isDead
+isAlive:
+  WTA 
+    1
+  STA
+    ISALIVE
+JMP
+  tripMask
+isDead:
+   WTA
+    0
+  STA
+    ISALIVE
+tripMaskSame:
+  LDA
+    Y
+  LDB 
+    M1  
+  AND AB // Diff with triple bit mask
+  CNT A // Count diff
+  STA 
+    CURRENTCOUNT
+checkRowBehind:
+  LDA
+    Y
+  LDB
+    PIXELS
+  JMP 0 // If we're on row 0 (PIXELS), grab row 7
+    wrapBehind
+  DEC B // Otherwise decrement
+  JMP
+    tripMaskBehind
+wrapBehind:
+  LDA
+    7
+  ADD AB
+tripMaskBehind:
+  LDA B
+  LDB 
+    M1  
+  LDB B // load mask data into B
+  AND AB // Diff with triple bit mask
+  CNT A // Count diff
+  LDB
+    CURRENTCOUNT
+  ADD BA
+  STA
+    CURRENTCOUNT
+checkRowAhead:
+  LDA
+    Y
+  LDB
+    PIXELS END
+  JMP 0 // If we're on row 7 (PIXELS), grab row 0
+    wrapAhead
+  INC B // Otherwise increment
+  JMP
+    tripMaskAhead
+wrapAhead:
+  LDA
+    7
+  SUB AB
+tripMaskAhead:
+  LDA B
+  LDB 
+    M1  
+  LDB B // load mask data into B
+  AND AB // Diff with triple bit mask
+  CNT A // Count diff
+  LDB
+    CURRENTCOUNT
+  ADD BA
+  LDB
+    3
+  JMP0
+    nextAlive
+  STA
+    CURRENTCOUNT
+  LDA 
+    ISALIVE
+  LDB
+    0
+  JMP0
+    nextDead
+  LDA
+    CURRENTCOUNT
+  LDB
+    2
+  JMP0
+    nextAlive
+nextDead:
+  LDA 
+    OY
+  LDA A
+  LDB 
+    MASKSINGLE
+  INVERT B
+  AND BA
+  STA
+    OY
+nextAlive:
+  LDA 
+    OY
+  LDA A
+  LDB 
+    MASKSINGLE
+  OR BA
+  STA
+    OY   
+nextCol:
+  LDA
+    MASKSINGLE
+  CIRC SHIFT A // Circular shift the single bit mask
+  LDB
+    10000000
+  JMP 0
+    nextRow // Jump to next row if we're back to beginning
+  JMP
+    checkAlive // Otherwise loop back round on same line
+nextRow:
+  LDA
+    Y
+  LDB
+    PIXELS END
+  JMP0
+    start
+  INC A
+  STA
+    Y
+  LDA
+    OY
+  INC A
+  STA
+   OY
+  JMP
+    drawRow
+
+
+
+  
+  
