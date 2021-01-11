@@ -1,0 +1,14 @@
+$pix 16           ; pixel address
+$len 8            ; height of pixels
+
+start:
+  PUT_M pix 8     ; put an 8 in $pix address
+loop:
+  REF_A pix       ; load A with byte stored at address in $pix
+  OUT_D           ; send image line to display from A
+  LOAD_A pix      ; load A with address stored at pix
+  DEC             ; decrement address stored in A
+  BEQ end         ; Go to end if A = 0 
+  JMP loop        ; Keep looping otherwise
+end:
+  HALT

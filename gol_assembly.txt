@@ -14,7 +14,7 @@ start:
   
   X, Y, MASK0, MASK1, CURRENTCOUNT, ISALIVE, OY
   INPIXELS
-  PIXELS_END (pixels+7)
+  PIXELS_END  // (pixels+7)
   OUTPIXELS
   OUTPIXELS_END
   MASKSINGLE
@@ -46,19 +46,15 @@ start:
     7
   STA
     MASKTRIPLE
-swap:               // swap pixels backwards until Y and OY are at start addresses
-  LDB
-    OY
-  DEC B             // Decrement output address in B  
-  LDA B             // Load A with output pixels
-  STB   
-    OY              // Store new decremented address
-  LDB 
-    Y               // Load input address into B
-  DEC B             // Decrement input address
-  STA B             // Store output pixels into input address
-  STB 
-    Y               // Store new decremented address
+swap:               // swap pixels until Y and OY are at start addresses
+  LOAD  a,OY        // Load output pixels address into A
+  INC   a           // Increment output address in A  
+  LOAD  b,a         // Load B with output pixels from A
+  STORE b,OY        // Store new incremented address
+  LOAD  a,Y         // Load input address into A
+  INC   a           // Increment input address
+  STORE b,a         // Store output pixels into input address
+  STORE a,Y         // Store new decremented address
   LDA   
     PIXELS          // Load A with input start address
   JMP0              // If we've done all the swapping, jump ahead

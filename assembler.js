@@ -1,5 +1,7 @@
 const fs = require('fs')
 const commands = require('./commands')
+const args = process.argv.slice(2)
+const fileName = args[0]
 
 const dec2bin = n => {
   n = parseFloat(n)
@@ -28,7 +30,11 @@ const processNum = num =>
   dec2bin(num)
 
 const labels = {}
-const vars = {}z
+const vars = {}
+
+const lines = fs.readFileSync(fileName).toString().split("\n");
+
+let currLine = 0;
 
 // Find labels and variables
 lines.forEach(l => {
