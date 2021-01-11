@@ -1,5 +1,6 @@
 {
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328old",
-    "sketch": "microcode2/microcode2.ino"
+    "sketch": "program-code/program-code.ino",
+    "port": "/dev/tty.usbserial-1410"
 }

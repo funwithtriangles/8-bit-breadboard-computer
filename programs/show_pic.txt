@@ -7,8 +7,8 @@ loop:
   REF_A pix       ; load A with byte stored at address in $pix
   OUT_D           ; send image line to display from A
   LOAD_A pix      ; load A with address stored at pix
-  DEC             ; decrement address stored in A
+  ALU_DEC         ; decrement address stored in A
   BEQ end         ; Go to end if A = 0 
   JMP loop        ; Keep looping otherwise
 end:
-  HALT
+  HLT

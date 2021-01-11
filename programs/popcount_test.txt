@@ -1,0 +1,24 @@
+; Count the set bits in memory location 0-7
+
+$currLine=15
+$count=14
+
+init:
+  PTM currLine 7
+  PTM count 0
+loop:
+  RLA currLine
+  OTD
+  ALU_POP
+  OUT
+  ALU_ADD count
+  STA count
+  LDA currLine
+  ALU_DEC 0
+  JE end
+  STA currLine
+  J loop
+end:
+  LDA count
+  OUT
+  HLT

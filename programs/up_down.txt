@@ -1,0 +1,12 @@
+  PTM 0 0
+countUp:
+  ALU_INC 0
+  JC countDown
+  OUT
+  J countUp
+countDown:
+  ALU_DEC 0
+  ALU_CMP 0
+  JE countUp
+  OUT
+  J countDown

@@ -1,0 +1,78 @@
+; Count all 8 neighbours for each cell (mem 0-7)
+
+$currRow=15
+$currCol=14
+$maskEdges=13
+$maskFull=12
+$currCount=11
+$temp=10
+$modMask=9
+$zero=8
+
+init:
+  PTM currRow 8
+  ; These bitmasks get the neighbours, we rotate them for each col
+  PTM maskEdges b10000010
+  PTM maskFull b10000011
+  ; This mask is used to make sure the rows wrap 
+  ; when checking above and below for neighbours
+  PTM modMask b00000111
+  PTM zero 0
+loopRow:
+  LDA currRow
+  ALU_DEC 0
+  ALU_CMP zero
+  JE end
+  STA currRow
+  PTM currCol 7
+loopCol:
+  PTM currCount 0 ; Reset neighbour count to 0
+
+  ; left and right neighbours
+  RLA currRow
+  ALU_AND maskEdges
+  ALU_POP
+  ALU_ADD currCount
+  STA currCount
+
+  ; top neighbours, get row above
+  LDA currRow
+  ALU_INC 0
+  ALU_AND modMask ; loop round if we've gone higher than 7
+  STA temp
+  RLA temp ; Having to store and retrieve to use RLA
+  ALU_AND maskFull
+  ALU_POP
+  ALU_ADD currCount
+  STA currCount
+
+  ; bottom neighbours, get row below
+  LDA currRow
+  ALU_DEC 0
+  ALU_AND modMask ; loop round if we've gone lower than 0
+  STA temp
+  RLA temp ; Having to store and retrieve to use RLA
+  ALU_AND maskFull
+  ALU_POP
+  ALU_ADD currCount
+
+  ; Display the count for that cell
+  OUT
+
+  ; Rotate the masks
+  LDA maskEdges
+  ALU_ROT
+  STA maskEdges
+  LDA maskFull
+  ALU_ROT
+  STA maskFull
+
+  ; Move along a column or jump to next row if at end
+  LDA currCol
+  ALU_DEC 0
+  ALU_CMP zero
+  JE loopRow
+  STA currCol
+  J loopCol
+end:
+  HLT

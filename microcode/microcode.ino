@@ -52,7 +52,7 @@ uint16_t mainOpsTemplate[16][8] = {
   { PO|II, PC|X,        BI|PO,  PC|X,      X,         X,     X, X },   // 000 0110 - PTB ; load B from next line
   { PO|II, PC|AO|OI,    X,      X,         X,         X,     X, X },   // 000 0111 - OUT ; output to 7 seg from A
   { PO|II, PC|X,        MI|PO,  PC|X,      RI|PO,     PC|X,  X, X },   // 000 1000 - PTM ; store mem from next line
-  { PO|II, PC|X,        MI|PO,  RO|MI|PC,  RO|AI,     X,     X, X },   // 000 1001 - RFA ; load A with byte found at mem address referenced
+  { PO|II, PC|X,        MI|PO,  RO|MI|PC,  RO|AI,     X,     X, X },   // 000 1001 - RLA ; load A with byte found at mem address referenced
   { PO|II, PC|X,        MI|PO,  RO|MI|PC,  RI|AO,     X,     X, X },   // 000 1010 - RSA ; store A with byte found at mem address referenced
   { PO|II, PC|AO|DI,    DC|X,   X,         X,         X,     X, X },   // 000 1011 - OUTD 
   { PO|II, PC|X,        PC|X,   X,         X,         X,     X, X },   // 000 1100 - JE
@@ -64,13 +64,13 @@ uint16_t mainOpsTemplate[16][8] = {
 uint16_t mainOps[4][16][8];
 
 uint16_t aluOps[7][8] = {
-  { PO|II,  PC|X,          MI|PO,         RO|BI|FI|PC,      EO|AI,       X, X, X },   // 001 XXXX - ALU
-  { PO|II,  PC|X,          MI|PO,         RO|BI|FI|CAR|PC,  EO|AI|CAR,   X, X, X },   // 010 XXXX - ALU_C
-  { PO|II,  PC|EO|AI|ROT,  X,             X,                X,           X, X, X },   // 011 XXXX - ALU_R
-  { PO|II,  PC|EO|AI|POP,  X,             X,                X,           X, X, X },   // 100 XXXX - ALU_P
-  { PO|II,  PC|X,          BI|PO|FI,      EO|AI|PC,         X,           X, X, X },   // 101 XXXX - ALU_Q
-  { PO|II,  PC|X,          BI|PO|FI|CAR,  EO|AI|PC|CAR,     X,           X, X, X },   // 110 XXXX - ALU_CQ
-  { PO|II,  PC|X,          MI|PO,         RO|BI|FI|PC,      X,           X, X, X },   // 111 XXXX - CMP
+  { PO|II,  PC|X,          MI|PO,         RO|BI|PC,         EO|AI|FI,       X, X, X },   // 001 XXXX - ALU
+  { PO|II,  PC|X,          MI|PO,         RO|BI|CAR|PC,     EO|AI|CAR|FI,   X, X, X },   // 010 XXXX - ALU_C
+  { PO|II,  PC|EO|AI|ROT,  X,             X,                X,              X, X, X },   // 011 XXXX - ALU_R
+  { PO|II,  PC|EO|AI|POP,  X,             X,                X,              X, X, X },   // 100 XXXX - ALU_P
+  { PO|II,  PC|X,          BI|PO,         EO|AI|PC|FI,      X,              X, X, X },   // 101 XXXX - ALU_Q
+  { PO|II,  PC|X,          BI|PO|CAR,     EO|AI|PC|CAR|FI,  X,              X, X, X },   // 110 XXXX - ALU_CQ
+  { PO|II,  PC|X,          MI|PO,         RO|BI|PC,         FI|X,           X, X, X },   // 111 XXXX - CMP
 };
 
 

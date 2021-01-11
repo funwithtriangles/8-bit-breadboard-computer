@@ -1,0 +1,30 @@
+; Count the left and right neighbours for each cell (mem 0-7)
+
+$currRow=15
+$currCol=14
+$mask=13
+
+init:
+  PTM currRow 8
+  PTM mask b10000010 ; This bitmask will rotate left
+loopRow:
+  LDA currRow
+  ALU_DEC 0
+  JE end
+  STA currRow
+  PTM currCol 7
+loopCol:
+  RLA currRow
+  ALU_AND mask
+  ALU_POP
+  OUT
+  LDA mask
+  ALU_ROT
+  STA mask
+  LDA currCol
+  ALU_DEC 0
+  JE loopRow
+  STA currCol
+  J loopCol
+end:
+  HLT
