@@ -69,6 +69,7 @@ lines.forEach(l => {
 console.log(labels, vars)
 
 let assembled = []
+let lineNum = 0
 
 // Assemble
 lines.forEach((l, i) => {
@@ -85,7 +86,7 @@ lines.forEach((l, i) => {
     bin = processNum(line)
   }
 
-  assembled.push(`0b${bin},`)
+  lineNum = assembled.push(`0b${bin}, // ${dec2bin(lineNum)}: ${line}`)
 })
 
 fs.writeFileSync(

@@ -37,14 +37,10 @@ void pollForWriteCompletion(byte data) {
   byte currentMSB = 0;
   byte dataMSB = data & 0x80;
 
-  Serial.print("polling start");
-
   do {
     currentMSB = digitalRead(EEPROM_D7) << 7;
-    delay(2);
+    delay(10);
   } while ( currentMSB != dataMSB );
-
-  Serial.print("polling end");
 }
 
 /*
@@ -65,8 +61,7 @@ void writeEEPROM(int address, byte data) {
   delayMicroseconds(1);
   digitalWrite(WRITE_EN, HIGH);
 
-  delay(10);
-  // pollForWriteCompletion(data);
+  pollForWriteCompletion(data);
 }
 
 /*
