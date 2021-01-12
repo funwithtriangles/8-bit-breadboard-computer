@@ -1,216 +1,138 @@
+$currRow=8
+$currCol=9
+$maskEdges=10
+$maskFull=11
+$maskOne=12
+$currCount=13
+$temp=14
+$modMask=15
+$neg1=16
+$nAliveDead=17
+$nAlive=18
+$lineBuild=19
+$tempLines=20
+$one=28
 
+init:
+  PTM currRow 8
+  ; These bitmasks get the neighbours, we rotate them for each col
+  PTM maskEdges b10000010
+  PTM maskFull b10000011
+  PTM maskOne b00000001
+  ; This mask is used to make sure the rows wrap 
+  ; when checking above and below for neighbours
+  PTM modMask b00000111
+  PTM neg1 b11111111
+  PTM nAliveDead 3
+  PTM nAlive 2
+  PTM one 1
+loopFrame:
+  PTM currRow 8
+loopRow:
+  PTM lineBuild b00000000
+  LDA currRow
+  ALU_DEC 0
+  ALU_CMP neg1
+  JE copyFrame
+  STA currRow
+  PTM currCol 7
+loopCol:
+  PTM currCount 0 ; Reset neighbour count to 0
 
-start:
-  WTM
-  addressX
-  7
+  ; left and right neighbours
+  RLA currRow
+  ALU_AND maskEdges
+  ALU_POP
+  ALU_ADD currCount
+  STA currCount
 
-  WTM
-  inPixEnd + 1
-  addressY
+  ; top neighbours, get row above
+  LDA currRow
+  ALU_INC 0
+  ALU_AND modMask ; loop round if we've gone higher than 7
+  STA temp
+  RLA temp ; Having to store and retrieve to use RLA
+  ALU_AND maskFull
+  ALU_POP
+  ALU_ADD currCount
+  STA currCount
 
+  ; bottom neighbours, get row below
+  LDA currRow
+  ALU_DEC 0
+  ALU_AND modMask ; loop round if we've gone lower than 0
+  STA temp
+  RLA temp ; Having to store and retrieve to use RLA
+  ALU_AND maskFull
+  ALU_POP
+  ALU_ADD currCount
 
-  
-  
-  X, Y, MASK0, MASK1, CURRENTCOUNT, ISALIVE, OY
-  INPIXELS
-  PIXELS_END  // (pixels+7)
-  OUTPIXELS
-  OUTPIXELS_END
-  MASKSINGLE
-  MASKTRIPLE
+  ; If count === 3, then cell becomes (or stays) alive
+  ALU_CMP nAliveDead
+  JE makeCellLive
 
-  // Load into mem
-start:
-  WTA 
-    7
-  STA
-    X
-  WTA 
-    INPIXELS_END + 1
-  STA
-    Y
-  WTA 
-    OUTPIXELS_END + 1
-  STA
-    OY
-  WTA
-    10000000
-  STA
-    MASKSINGLE
-  WTA
-    01000001
-  STA
-    MASKTRIPLE
-  WTA
-    7
-  STA
-    MASKTRIPLE
-swap:               // swap pixels until Y and OY are at start addresses
-  LOAD  a,OY        // Load output pixels address into A
-  INC   a           // Increment output address in A  
-  LOAD  b,a         // Load B with output pixels from A
-  STORE b,OY        // Store new incremented address
-  LOAD  a,Y         // Load input address into A
-  INC   a           // Increment input address
-  STORE b,a         // Store output pixels into input address
-  STORE a,Y         // Store new decremented address
-  LDA   
-    PIXELS          // Load A with input start address
-  JMP0              // If we've done all the swapping, jump ahead
-    sendRow 
-  JMP 
-    swap            // loop swap
-sendRow:
-  LDA
-    OY
-  LDD A
-checkAlive:
-  LDA
-    Y
-  LDB 
-    MASKSINGLE
-  AND AB // Diff with single bit mask
-  CNT A // Count diff (will be either 1 or 0)
-  JMP A0
-    isDead
-isAlive:
-  WTA 
-    1
-  STA
-    ISALIVE
-JMP
-  tripMask
-isDead:
-   WTA
-    0
-  STA
-    ISALIVE
-tripMaskSame:
-  LDA
-    Y
-  LDB 
-    M1  
-  AND AB // Diff with triple bit mask
-  CNT A // Count diff
-  STA 
-    CURRENTCOUNT
-checkRowBehind:
-  LDA
-    Y
-  LDB
-    PIXELS
-  JMP 0 // If we're on row 0 (PIXELS), grab row 7
-    wrapBehind
-  DEC B // Otherwise decrement
-  JMP
-    tripMaskBehind
-wrapBehind:
-  LDA
-    7
-  ADD AB
-tripMaskBehind:
-  LDA B
-  LDB 
-    M1  
-  LDB B // load mask data into B
-  AND AB // Diff with triple bit mask
-  CNT A // Count diff
-  LDB
-    CURRENTCOUNT
-  ADD BA
-  STA
-    CURRENTCOUNT
-checkRowAhead:
-  LDA
-    Y
-  LDB
-    PIXELS END
-  JMP 0 // If we're on row 7 (PIXELS), grab row 0
-    wrapAhead
-  INC B // Otherwise increment
-  JMP
-    tripMaskAhead
-wrapAhead:
-  LDA
-    7
-  SUB AB
-tripMaskAhead:
-  LDA B
-  LDB 
-    M1  
-  LDB B // load mask data into B
-  AND AB // Diff with triple bit mask
-  CNT A // Count diff
-  LDB
-    CURRENTCOUNT
-  ADD BA
-  LDB
-    3
-  JMP0
-    nextAlive
-  STA
-    CURRENTCOUNT
-  LDA 
-    ISALIVE
-  LDB
-    0
-  JMP0
-    nextDead
-  LDA
-    CURRENTCOUNT
-  LDB
-    2
-  JMP0
-    nextAlive
-nextDead:
-  LDA 
-    OY
-  LDA A
-  LDB 
-    MASKSINGLE
-  INVERT B
-  AND BA
-  STA
-    OY
-nextAlive:
-  LDA 
-    OY
-  LDA A
-  LDB 
-    MASKSINGLE
-  OR BA
-  STA
-    OY   
-nextCol:
-  LDA
-    MASKSINGLE
-  CIRC SHIFT A // Circular shift the single bit mask
-  LDB
-    10000000
-  JMP 0
-    nextRow // Jump to next row if we're back to beginning
-  JMP
-    checkAlive // Otherwise loop back round on same line
-nextRow:
-  LDA
-    Y
-  LDB
-    PIXELS END
-  JMP0
-    start
-  INC A
-  STA
-    Y
-  LDA
-    OY
-  INC A
-  STA
-   OY
-  JMP
-    drawRow
+  ; if count === 2, then cell stays alive if currently alive
+  ALU_CMP nAlive
+  JE checkCellAlive
 
+rotMasks:
+  ; Rotate the masks
+  LDA maskEdges
+  ALU_ROT
+  STA maskEdges
+  LDA maskFull
+  ALU_ROT
+  STA maskFull
+  LDA maskOne
+  ALU_ROT
+  STA maskOne
 
+  ; Move along a column or jump to next row if at end
+  LDA currCol
+  ALU_DEC 0
+  JE sendLine
+  STA currCol
+  J loopCol
 
-  
-  
+makeCellLive:
+  ; ADD the single mask bit with the line we're building up
+  LDA lineBuild
+  ALU_ADD maskOne
+  STA lineBuild
+  J rotMasks
+
+sendLine:
+  ; Send the line to display and temp line in mem
+  PTA tempLines
+  ALU_ADD currRow
+  STA temp
+  LDA lineBuild
+  RSA temp 
+  OTD
+  J loopRow
+
+checkCellAlive:
+  ; (comes from CMP with 2) If cell is alive, keep cell alive
+  RLA currRow
+  ALU_AND maskOne
+  ALU_POP
+  ALU_CMP one
+  JE makeCellLive
+  J rotMasks
+
+copyFrame:
+  ; copy temp lines (20-27) into working mem (0-7)
+  PTM currRow 8
+loopCopy:
+  ; current row decrement 7-0 to get TO address
+  LDA currRow
+  ALU_DEC 0
+  ALU_CMP neg1
+  JE loopFrame
+  STA currRow
+  ; add templines address to get FROM address
+  ALU_ADD_Q tempLines
+  STA temp  ; Having to store and retrieve to use RLA
+  RLA temp  ; Load temp line into A
+  RSA currRow ; Store temp line in address referenced in currRow (0-7)
+  J loopCopy
