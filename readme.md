@@ -7,7 +7,7 @@ In this repo you'll find:
 
 - Arduino code for the EEPROMs (Microcode, 7-Segment Display, Program Code)
 - A simple assembler written in JS
-- "Assembly" programs
+- "Assembly" programs ([including Conway's Game of Life](programs/game_of_life.txt))
 
 ## How to assemble programs
 To run the assembler, run the following shell command from the root of this project:
