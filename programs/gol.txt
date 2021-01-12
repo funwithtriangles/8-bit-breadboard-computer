@@ -13,6 +13,7 @@ $nAliveDead=17
 $nAlive=18
 $lineBuild=19
 $tempLines=20
+$one=28
 
 init:
   PTM currRow 8
@@ -26,12 +27,15 @@ init:
   PTM neg1 b11111111
   PTM nAliveDead 3
   PTM nAlive 2
+  PTM one 1
+loopFrame:
+  PTM currRow 8
 loopRow:
   PTM lineBuild b00000000
   LDA currRow
   ALU_DEC 0
   ALU_CMP neg1
-  JE end
+  JE copyFrame
   STA currRow
   PTM currCol 7
 loopCol:
@@ -65,9 +69,13 @@ loopCol:
   ALU_POP
   ALU_ADD currCount
 
-  ; If count === 3, then cell stays alive
+  ; If count === 3, then cell becomes (or stays) alive
   ALU_CMP nAliveDead
   JE makeCellLive
+
+  ; if count === 2, then cell stays alive if currently alive
+  ALU_CMP nAlive
+  JE checkCellAlive
 
 rotMasks:
   ; Rotate the masks
@@ -105,5 +113,28 @@ sendLine:
   OTD
   J loopRow
 
-end:
-  HLT
+checkCellAlive:
+  ; (comes from CMP with 2) If cell is alive, keep cell alive
+  RLA currRow
+  ALU_AND maskOne
+  ALU_POP
+  ALU_CMP one
+  JE makeCellLive
+  J rotMasks
+
+copyFrame:
+  ; copy temp lines (20-27) into working mem (0-7)
+  PTM currRow 8
+loopCopy:
+  ; current row decrement 7-0 to get TO address
+  LDA currRow
+  ALU_DEC 0
+  ALU_CMP neg1
+  JE loopFrame
+  STA currRow
+  ; add templines address to get FROM address
+  ALU_ADD_Q tempLines
+  STA temp  ; Having to store and retrieve to use RLA
+  RLA temp  ; Load temp line into A
+  RSA currRow ; Store temp line in address referenced in currRow (0-7)
+  J loopCopy

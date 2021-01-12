@@ -1,16 +1,27 @@
 $currLine=15
 
 loadImg:
-  PTM 0 b00000000
-  PTM 1 b01100110
-  PTM 2 b01100110
-  PTM 3 b00000000
-  PTM 4 b00000000
-  PTM 5 b01000010
-  PTM 6 b01111110
-  PTM 7 b00000000
+  PTM 0   b00000000
+  PTM 1   b01100110
+  PTM 2   b01100110
+  PTM 3   b00000000
+  PTM 4   b00000000
+  PTM 5   b01000010
+  PTM 6   b01111110
+  PTM 7   b00000000
+
+  ; Loading image twice so it's in both sides of display memory
+  PTM 8   b00000000
+  PTM 9   b01100110
+  PTM 10  b01100110
+  PTM 11  b00000000
+  PTM 12  b00000000
+  PTM 13  b01000010
+  PTM 14  b01111110
+  PTM 15  b00000000
+
 init:
-  PTM currLine 7
+  PTM currLine 15
 loop:
   RLA currLine
   OTD
